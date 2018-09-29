@@ -7,11 +7,6 @@ using namespace std;
 
 int main(int argc, char **argv)
 {
-	//cout << argc << endl;
-	//cout << string(argv[0]) << endl;
-	//cout << string(argv[1]) << endl;
-	//cout << "Hello World!" << endl;
-
 	if (argc == 1) return 0;
 	else if (argc == 2)
 	{
@@ -26,11 +21,65 @@ int main(int argc, char **argv)
 		if (string(argv[1]) == "-c")
 		{
 			int length = input.length() - num;
-			cout << length << endl;
+			if (length == 1)
+			{
+				cout << "Zadany vstup obsahuje 1 znak." << endl;
+				return 0;
+			}
+			else if (length == 2 || length == 3 || length == 4)
+			{
+				cout << "Zadany vstup obsahuje " << length << " znaky." << endl;
+				return 0;
+			}
+			else
+			{
+				cout << "Zadany vstup obsahuje " << length << " znakov." << endl;
+				return 0;
+			}
+		}
+		else if (string(argv[1]) == "-w")
+		{
+			int i = 0, length;
+			while (i < input.length())
+			{
+				if (!isalpha(input[i]) && !isspace(input[i]))
+					input.erase(input.begin() + i);
+				i++;
+			}
+			length = input.length();
+			if (length == 1)
+			{
+				cout << "Zadany vstup obsahuje 1 slovo." << endl;
+				return 0;
+			}
+			else if (length == 2 || length == 3 || length == 4)
+			{
+				cout << "Zadany vstup obsahuje " << length << " slova." << endl;
+				return 0;
+			}
+			else
+			{
+				cout << "Zadany vstup obsahuje " << length << " slov." << endl;
+				return 0;
+			}
 		}
 		else if (string(argv[1]) == "-l")
 		{
-			cout << num << endl;
+			if (num == 1)
+			{
+				cout << "Zadany vstup obsahuje 1 riadok." << endl;
+				return 0;
+			}
+			else if (num == 2 || num == 3 || num == 4)
+			{
+				cout << "Zadany vstup obsahuje " << num << " riadky." << endl;
+				return 0;
+			}
+			else
+			{
+				cout << "Zadany vstup obsahuje " << num << " riadkov." << endl;
+				return 0;
+			}
 		}
 	}
 
