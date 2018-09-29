@@ -3,20 +3,41 @@
 
 #include <iostream>
 #include <string>
+#include <fstream>
 using namespace std;
 
 int main(int argc, char **argv)
 {
-	if (argc == 1) return 0;
-	else if (argc == 2)
+	if (argc != 2 && argc != 3) return 0;
+	else if (argc == 2 || argc == 3)
 	{
 		string input;
 		string iinput;
 		int num = 0;
-		while (getline(cin, iinput))
+		if (argc == 2)
 		{
-			input.append(iinput + "\n");
-			num++;
+			while (getline(cin, iinput))
+			{
+				input.append(iinput + "\n");
+				num++;
+			}
+		}
+		else
+		{
+			fstream file;
+			cout << string(argv[2]) << endl;
+			file.open(string(argv[2]));
+			if (!file.is_open())
+			{
+				cout << "Nepodarilo sa otvorit subor." << endl;
+				return 0;
+			}
+			while (getline(file, iinput))
+			{
+				input.append(iinput + "\n");
+				num++;
+			}
+			file.close();
 		}
 		if (string(argv[1]) == "-c")
 		{
@@ -82,8 +103,5 @@ int main(int argc, char **argv)
 			}
 		}
 	}
-
-
-
 	return 0;
 }
