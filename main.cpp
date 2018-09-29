@@ -27,7 +27,7 @@ int main(int argc, char **argv)
 			fstream file;
 			cout << string(argv[2]) << endl;
 			file.open(string(argv[2]));
-			if (!file.is_open())
+			if (! file)
 			{
 				cout << "Nepodarilo sa otvorit subor." << endl;
 				return 0;
