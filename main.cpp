@@ -28,6 +28,10 @@ int main(int argc, char **argv)
 			int length = input.length() - num;
 			cout << length << endl;
 		}
+		else if (string(argv[1]) == "-l")
+		{
+			cout << num << endl;
+		}
 	}
 
 
