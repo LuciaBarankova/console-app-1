@@ -42,7 +42,8 @@ int main(int argc, char **argv)
 		if (string(argv[1]) == "-c")
 		{
 			int length = input.length() - num;
-			if (length == 1)
+			if (length == 0) cout << "Zadany vstup neobsahuje ziadne znaky" << endl;
+			else if (length == 1)
 			{
 				cout << "Zadany vstup obsahuje 1 znak." << endl;
 				return 0;
@@ -88,7 +89,8 @@ int main(int argc, char **argv)
 				else medzery = 0;
 				i++;
 			}
-			if (slova == 1)
+			if (slova == 0)	cout << "Zadany vstup neobsahuje ziadne slovo" << endl;
+			else if (slova == 1)
 			{
 				cout << "Zadany vstup obsahuje 1 slovo." << endl;
 				return 0;
@@ -106,7 +108,8 @@ int main(int argc, char **argv)
 		}
 		else if (string(argv[1]) == "-l")
 		{
-			if (num == 1)
+			if (num == 0) cout << "Zadany vstup neobsahuje ziaden riadok" << endl;
+			else if (num == 1)
 			{
 				cout << "Zadany vstup obsahuje 1 riadok." << endl;
 				return 0;
