@@ -60,11 +60,23 @@ int main(int argc, char **argv)
 		}
 		else if (string(argv[1]) == "-w")
 		{
-			int i = 0, length, slova = 0, medzery = 0;
+			int i = 0, length, slova = 0, medzery = 0, znamienko = 0;
 			while (i < input.length())
 			{
 				if (!isalpha(input[i]) && !isspace(input[i]))
-					input.erase(input.begin() + i);
+				{
+					if (znamienko == 0)
+					{
+						znamienko++;
+						input.erase(input.begin() + i);
+						i--;
+					}
+					else if (znamienko > 0)
+					{
+						input.erase(input.begin() + i);
+						input.insert(i, " ");
+					}
+				}
 				if (isspace(input[i]))
 				{
 					if (medzery == 0)
