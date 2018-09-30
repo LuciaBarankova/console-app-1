@@ -60,12 +60,20 @@ int main(int argc, char **argv)
 		}
 		else if (string(argv[1]) == "-w")
 		{
-			int i = 0, length, slova = 0;
+			int i = 0, length, slova = 0, medzery = 0;
 			while (i < input.length())
 			{
 				if (!isalpha(input[i]) && !isspace(input[i]))
 					input.erase(input.begin() + i);
-				if (isspace(input[i])) slova++;
+				if (isspace(input[i]))
+				{
+					if (medzery == 0)
+					{
+						medzery++;
+						slova++;
+					}
+				}
+				else medzery = 0;
 				i++;
 			}
 			if (slova == 1)
