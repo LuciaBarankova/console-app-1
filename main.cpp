@@ -61,25 +61,31 @@ int main(int argc, char **argv)
 		}
 		else if (string(argv[1]) == "-w")
 		{
-			int i = 0, length, slova = 0, medzery = 0, znamienko = 0;
+			int i = 0, slova = 0, medzery = 0, znamienko = 0;
 			while (i < input.length())
-			{
+			{	
 				if (!isalpha(input[i]) && !isspace(input[i]))
 				{
 					if (znamienko == 0)
 					{
 						znamienko++;
 						input.erase(input.begin() + i);
-						i--;
+						continue;
 					}
 					else if (znamienko > 0)
 					{
 						input.erase(input.begin() + i);
-						input.insert(i, " ");
+						if (i != 0) input.insert(i, " ");
 					}
 				}
+				else znamienko = 0;
 				if (isspace(input[i]))
 				{
+					if (i == 0)
+					{
+						input.erase(input.begin());
+						continue;
+					}
 					if (medzery == 0)
 					{
 						medzery++;
