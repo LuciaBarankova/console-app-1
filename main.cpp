@@ -60,27 +60,27 @@ int main(int argc, char **argv)
 		}
 		else if (string(argv[1]) == "-w")
 		{
-			int i = 0, length;
+			int i = 0, length, slova = 0;
 			while (i < input.length())
 			{
 				if (!isalpha(input[i]) && !isspace(input[i]))
 					input.erase(input.begin() + i);
+				if (isspace(input[i])) slova++;
 				i++;
 			}
-			length = input.length();
-			if (length == 1)
+			if (slova == 1)
 			{
 				cout << "Zadany vstup obsahuje 1 slovo." << endl;
 				return 0;
 			}
-			else if (length == 2 || length == 3 || length == 4)
+			else if (slova == 2 || slova == 3 || slova == 4)
 			{
-				cout << "Zadany vstup obsahuje " << length << " slova." << endl;
+				cout << "Zadany vstup obsahuje " << slova << " slova." << endl;
 				return 0;
 			}
 			else
 			{
-				cout << "Zadany vstup obsahuje " << length << " slov." << endl;
+				cout << "Zadany vstup obsahuje " << slova << " slov." << endl;
 				return 0;
 			}
 		}
