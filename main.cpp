@@ -2,9 +2,10 @@
 //
 
 #include <iostream>
-#include <string>
 #include <fstream>
-using namespace std;
+
+#include "Counter.h"
+
 
 int main(int argc, char **argv)
 {
@@ -13,13 +14,11 @@ int main(int argc, char **argv)
 	{
 		string input;
 		string iinput;
-		int num = 0;
 		if (argc == 2)
 		{
 			while (getline(cin, iinput))
 			{
 				input.append(iinput + "\n");
-				num++;
 			}
 		}
 		else
@@ -35,13 +34,12 @@ int main(int argc, char **argv)
 			while (getline(file, iinput))
 			{
 				input.append(iinput + "\n");
-				num++;
 			}
 			file.close();
 		}
 		if (string(argv[1]) == "-c")
 		{
-			int length = input.length() - num;
+			int length = counter_char(input);
 			if (length == 0) cout << "Zadany vstup neobsahuje ziadne znaky" << endl;
 			else if (length == 1)
 			{
@@ -61,40 +59,7 @@ int main(int argc, char **argv)
 		}
 		else if (string(argv[1]) == "-w")
 		{
-			int i = 0, slova = 0, medzery = 0, znamienko = 0;
-			while (i < input.length())
-			{	
-				if (!isalpha(input[i]) && !isspace(input[i]))
-				{
-					if (znamienko == 0)
-					{
-						znamienko++;
-						input.erase(input.begin() + i);
-						continue;
-					}
-					else if (znamienko > 0)
-					{
-						input.erase(input.begin() + i);
-						if (i != 0) input.insert(i, " ");
-					}
-				}
-				else znamienko = 0;
-				if (isspace(input[i]))
-				{
-					if (i == 0)
-					{
-						input.erase(input.begin());
-						continue;
-					}
-					if (medzery == 0)
-					{
-						medzery++;
-						slova++;
-					}
-				}
-				else medzery = 0;
-				i++;
-			}
+			int slova = counter_word(input);
 			if (slova == 0)	cout << "Zadany vstup neobsahuje ziadne slovo" << endl;
 			else if (slova == 1)
 			{
@@ -114,6 +79,7 @@ int main(int argc, char **argv)
 		}
 		else if (string(argv[1]) == "-l")
 		{
+			int num = counter_line(input);
 			if (num == 0) cout << "Zadany vstup neobsahuje ziaden riadok" << endl;
 			else if (num == 1)
 			{
