@@ -81,7 +81,15 @@ struct _char : public string
 		while (getline(iss, line)) count++;
 		return str.length() - count;
 	};*/
-	size_t Spocitaj() { return size(); };
+	size_t Spocitaj() 
+	{
+		int count = 0;
+		for (int i = 0; i < length(); i++)
+		{
+			if (*(begin() + i) == '\n') count++;
+		}
+		return length() - count; 
+	};
 };
 
 
