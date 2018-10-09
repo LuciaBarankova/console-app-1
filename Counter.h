@@ -9,10 +9,11 @@ using namespace std;
 template <typename T>
 size_t Spocitaj(string str)
 {
-	return T::Spocitaj(str);
+	T obj(str);
+	return obj.Spocitaj();
 }
 
-int counter_char(string input)
+/*int counter_char(string input)
 {
 	int count = 0;
 	istringstream iss(input);
@@ -67,24 +68,27 @@ int counter_line(string input)
 	string line;
 	while (getline(iss, line)) count++;
 	return count;
-}
+}*/
 
-struct _char
+struct _char : public string
 {
-	static int Spocitaj(string str)
+	_char(string str) :string(str) {};
+	/*int Spocitaj(string str)
 	{
 		int count = 0;
 		istringstream iss(str);
 		string line;
 		while (getline(iss, line)) count++;
 		return str.length() - count;
-	};
+	};*/
+	size_t Spocitaj() { return size(); };
 };
 
 
-struct _word
+struct _word : public string
 {
-	static int Spocitaj(string str)
+	_word(string str) : string(str) {};
+	/*static int Spocitaj(string str)
 	{
 		int i = 0, slova = 0, medzery = 0, znamienko = 0;
 		while (i < str.length())
@@ -121,17 +125,65 @@ struct _word
 			i++;
 		}
 		return slova;
+	};*/
+	size_t Spocitaj()
+	{
+		int i = 0, slova = 0, medzery = 0, znamienko = 0;
+		while (i < length())
+		{
+			if (!isalpha(*(begin()+i)) && !isspace(*(begin()+i)))
+			{
+				if (znamienko == 0)
+				{
+					znamienko++;
+					erase(begin() + i);
+					continue;
+				}
+				else if (znamienko > 0)
+				{
+					erase(begin() + i);
+					if (i != 0) insert(i, " ");
+				}
+			}
+			else znamienko = 0;
+			if (isspace(*(begin()+i)))
+			{
+				if (i == 0)
+				{
+					erase(begin());
+					continue;
+				}
+				if (medzery == 0)
+				{
+					medzery++;
+					slova++;
+				}
+			}
+			else medzery = 0;
+			i++;
+		}
+		return slova;
 	};
 };
 
-struct _line
+struct _line : public string
 {
-	static int Spocitaj(string str) 
+	_line(string str) : string(str) {};
+	/*int Spocitaj()
 	{
 		int count = 0;
 		istringstream iss(str);
 		string line;
 		while (getline(iss, line)) count++;
+		return count;
+	};	*/
+	size_t Spocitaj()
+	{
+		int count = 0;
+		for (int i = 0; i < length(); i++)
+		{
+			if (*(begin() + i) == '\n') count++;
+		}
 		return count;
 	};
 };
