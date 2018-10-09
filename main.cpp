@@ -39,7 +39,8 @@ int main(int argc, char **argv)
 		}
 		if (string(argv[1]) == "-c")
 		{
-			int length = counter_char(input);
+			//int length = counter_char(input);
+			int length = Spocitaj<_char>(input);
 			if (length == 0) cout << "Zadany vstup neobsahuje ziadne znaky" << endl;
 			else if (length == 1)
 			{
@@ -59,7 +60,8 @@ int main(int argc, char **argv)
 		}
 		else if (string(argv[1]) == "-w")
 		{
-			int slova = counter_word(input);
+			//int slova = counter_word(input);
+			int slova = Spocitaj<_word>(input);
 			if (slova == 0)	cout << "Zadany vstup neobsahuje ziadne slovo" << endl;
 			else if (slova == 1)
 			{
@@ -79,7 +81,8 @@ int main(int argc, char **argv)
 		}
 		else if (string(argv[1]) == "-l")
 		{
-			int num = counter_line(input);
+			//int num = counter_line(input);
+			int num = Spocitaj<_line>(input);
 			if (num == 0) cout << "Zadany vstup neobsahuje ziaden riadok" << endl;
 			else if (num == 1)
 			{
