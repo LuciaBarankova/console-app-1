@@ -10,6 +10,9 @@
 #include <tuple>
 #include <vector>
 
+
+using namespace Gdiplus;
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -77,6 +80,7 @@ BEGIN_MESSAGE_MAP(CApplicationDlg, CDialogEx)
 	ON_WM_SIZING()
 	ON_MESSAGE(WM_DRAW_IMAGE, OnDrawImage)
 	ON_WM_DESTROY()
+	ON_STN_CLICKED(IDC_IMAGE, &CApplicationDlg::OnStnClickedImage)
 END_MESSAGE_MAP()
 
 
@@ -91,7 +95,28 @@ LRESULT CApplicationDlg::OnDrawImage(WPARAM wParam, LPARAM lParam)
 
 	CDC * pDC = CDC::FromHandle(lpDI->hDC);
 
-	//DRAW BITMAP
+
+	if (image != nullptr)
+	{
+		//::MessageBox(NULL, __T("Tu som.2"), __T("Message"), MB_OK);
+		CBitmap bmp;
+		CDC bmDC;
+		CBitmap *pOldbmp;
+		BITMAP  bi;
+
+		bmp.Attach(image->Detach());
+		bmDC.CreateCompatibleDC(pDC);
+
+		CRect r(lpDI->rcItem);
+
+		pOldbmp = bmDC.SelectObject(&bmp);
+		bmp.GetBitmap(&bi);
+		pDC->BitBlt(0, 0, r.Width(), r.Height(), &bmDC, 0, 0, SRCCOPY);
+		bmDC.SelectObject(pOldbmp);
+
+
+		//DRAW BITMAP
+	}
 	return S_OK;
 }
 
@@ -161,6 +186,7 @@ void CApplicationDlg::OnSysCommand(UINT nID, LPARAM lParam)
 
 void CApplicationDlg::OnPaint()
 {
+	//::MessageBox(NULL, __T("Tu som.4"), __T("Message"), MB_OK);
 	if (IsIconic())
 	{
 		CPaintDC dc(this); // device context for painting
@@ -180,58 +206,6 @@ void CApplicationDlg::OnPaint()
 	}
 	else
 	{
-		if (image)
-		{
-			int img_x = image->GetWidth();
-			int img_y = image->GetHeight();
-			
-			CRect rect;
-			GetClientRect(&rect);
-			int cx_icon = GetSystemMetrics(SM_CXICON);
-			int cy_icon = GetSystemMetrics(SM_CYICON);
-			int app_x = (rect.Width() - cx_icon + 1) / 2;
-			int app_y = (rect.Height() - cy_icon + 1) / 2;
-
-			float factor = 1;
-			if ((img_x <= app_x) && (img_y <= app_y)) {
-				if (app_x > app_y) {
-					factor = (float)app_y / (float)img_y;
-				}
-				else {
-					factor = (float)app_x / (float)img_x;
-				}
-			}
-			if ((img_x <= app_x) && (img_y > app_y)) {
-				factor = (float)app_y / (float)img_y;
-			}
-			if ((img_x > app_x) && (img_y <= app_y)) {
-				factor = (float)app_x / (float)img_x;
-			}
-			if ((img_x > app_x) && (img_y > app_y)) {
-				if (img_x > img_y) {
-					factor = (float)app_y / (float)img_y;
-				}
-				else {
-					factor = (float)app_x / (float)img_x;
-				}
-			}
-
-			// vytvorenie bitmapy
-			CDC *screenDC = GetDC();
-			CDC mDC;
-			mDC.CreateCompatibleDC(screenDC);
-			CBitmap bitmap;
-			bitmap.CreateCompatibleBitmap(screenDC, img_x * factor, img_y * factor);
-
-			CBitmap *p_bitmap = mDC.SelectObject(&bitmap);
-			mDC.SetStretchBltMode(HALFTONE);
-			image->StretchBlt(mDC.m_hDC, 0, 0, img_x * factor, img_y * factor, 0, 0, img_x, img_y, SRCCOPY);
-			mDC.SelectObject(p_bitmap);
-
-			// vlozenie do Picture Control
-			m_ctrlImage.SetBitmap((HBITMAP)bitmap.Detach());
-			ReleaseDC(screenDC);
-		}
 		CDialogEx::OnPaint();
 	}
 }
@@ -247,64 +221,19 @@ void CApplicationDlg::OnFileOpen()
 {
 	//GET FILE NAME AND CREATE GDIPLUS BITMAP
 	CFileDialog fdlg(TRUE, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, _T("Jpg Files (*.jpg)|*.jpg|Png Files (*.png)|*.png||"));
+	::MessageBox(NULL, __T("Tu som.33"), __T("Message"), MB_OK);
+
 	if (fdlg.DoModal() == IDOK) {
 		CString path_name = fdlg.GetPathName();
 
-		/*CRect rect;
-		GetClientRect(&rect);
-		int cx_icon = GetSystemMetrics(SM_CXICON);
-		int cy_icon = GetSystemMetrics(SM_CYICON);
-		int app_x = (rect.Width() - cx_icon + 1) / 2;
-		int app_y = (rect.Height() - cy_icon + 1) / 2;*/
-
 		// nacitanie obrazku
 		image = new CImage();
-		image->Load(path_name);
-
-	//	OnPaint();
-
-		//int img_x = image.GetWidth();
-		//int img_y = image.GetHeight();
-
-		/*float factor = 1;
-		if ((img_x <= app_x) && (img_y <= app_y)) {
-			if (app_x > app_y) {
-				factor = (float)app_y / (float)img_y;
-			}
-			else {
-				factor = (float)app_x / (float)img_x;
-			}
+		if (image->Load(path_name))
+		{
+			delete image;
+			image = nullptr;
 		}
-		if ((img_x <= app_x) && (img_y > app_y)) {
-			factor = (float)app_y / (float)img_y;
-		}
-		if ((img_x > app_x) && (img_y <= app_y)) {
-			factor = (float)app_x / (float)img_x;
-		}
-		if ((img_x > app_x) && (img_y > app_y)) {
-			if (img_x > img_y) {
-				factor = (float)app_y / (float)img_y;
-			}
-			else {
-				factor = (float)app_x / (float)img_x;
-			}
-		}*/
-
-		/*// vytvorenie bitmapy
-		CDC *screenDC = GetDC();
-		CDC mDC;
-		mDC.CreateCompatibleDC(screenDC);
-		CBitmap bitmap;
-		bitmap.CreateCompatibleBitmap(screenDC, img_x * factor, img_y * factor);
-
-		CBitmap *p_bitmap = mDC.SelectObject(&bitmap);
-		mDC.SetStretchBltMode(HALFTONE);
-		image.StretchBlt(mDC.m_hDC, 0, 0, img_x * factor, img_y * factor, 0, 0, img_x, img_y, SRCCOPY);
-		mDC.SelectObject(p_bitmap);
-
-		// vlozenie do Picture Control
-		m_ctrlImage.SetBitmap((HBITMAP)bitmap.Detach());
-		ReleaseDC(screenDC); */
+		Invalidate();
 	}
 	else {
 		::MessageBox(NULL, __T("Chyba pri otvoreni file dialogu."), __T("Error"), MB_OK);
@@ -327,4 +256,9 @@ void CApplicationDlg::OnFileClose()
 void CApplicationDlg::OnUpdateFileClose(CCmdUI *pCmdUI)
 {
 	pCmdUI->Enable(TRUE);
+}
+
+void CApplicationDlg::OnStnClickedImage()
+{
+	// TODO: Add your control notification handler code here
 }

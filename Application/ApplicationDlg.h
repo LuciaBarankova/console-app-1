@@ -60,5 +60,7 @@ public:
 protected:
 	CStaticImage m_ctrlImage;
 	CPoint m_ptImage;
-	CImage *image=nullptr;
+	CImage *image = nullptr;
+public:
+	afx_msg void OnStnClickedImage();
 };
