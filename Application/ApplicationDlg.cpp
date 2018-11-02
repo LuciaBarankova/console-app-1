@@ -98,7 +98,6 @@ LRESULT CApplicationDlg::OnDrawImage(WPARAM wParam, LPARAM lParam)
 
 	if (image != nullptr)
 	{
-		//::MessageBox(NULL, __T("Tu som.2"), __T("Message"), MB_OK);
 		CBitmap bmp;
 		CDC bmDC;
 		CBitmap *pOldbmp;
@@ -113,7 +112,6 @@ LRESULT CApplicationDlg::OnDrawImage(WPARAM wParam, LPARAM lParam)
 		bmp.GetBitmap(&bi);
 		pDC->BitBlt(0, 0, r.Width(), r.Height(), &bmDC, 0, 0, SRCCOPY);
 		bmDC.SelectObject(pOldbmp);
-
 
 		//DRAW BITMAP
 	}
@@ -186,7 +184,6 @@ void CApplicationDlg::OnSysCommand(UINT nID, LPARAM lParam)
 
 void CApplicationDlg::OnPaint()
 {
-	//::MessageBox(NULL, __T("Tu som.4"), __T("Message"), MB_OK);
 	if (IsIconic())
 	{
 		CPaintDC dc(this); // device context for painting
@@ -221,18 +218,18 @@ void CApplicationDlg::OnFileOpen()
 {
 	//GET FILE NAME AND CREATE GDIPLUS BITMAP
 	CFileDialog fdlg(TRUE, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, _T("Jpg Files (*.jpg)|*.jpg|Png Files (*.png)|*.png||"));
-	::MessageBox(NULL, __T("Tu som.33"), __T("Message"), MB_OK);
 
 	if (fdlg.DoModal() == IDOK) {
 		CString path_name = fdlg.GetPathName();
 
 		// nacitanie obrazku
-		image = new CImage();
-		if (image->Load(path_name))
+		if (image!=nullptr)
 		{
 			delete image;
 			image = nullptr;
 		}
+		image = new CImage();
+		image->Load(path_name);
 		Invalidate();
 	}
 	else {
