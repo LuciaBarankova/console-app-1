@@ -89,6 +89,19 @@ void CApplicationDlg::OnDestroy()
 	Default();
 }
 
+void CApplicationDlg::OnSize(UINT nType, int cx, int cy)
+{
+	__super::OnSize(nType, cx, cy);
+
+	if (::IsWindow(m_ctrlImage.GetSafeHwnd()))
+	{
+		m_ctrlImage.MoveWindow(0, 0, cx, cy);
+	}
+	SetWindowPos(this, 0, 0, cx, cy, (UINT)SWP_NOMOVE);
+
+	Invalidate();
+}
+
 LRESULT CApplicationDlg::OnDrawImage(WPARAM wParam, LPARAM lParam)
 {
 	LPDRAWITEMSTRUCT lpDI = (LPDRAWITEMSTRUCT)wParam;
@@ -110,9 +123,12 @@ LRESULT CApplicationDlg::OnDrawImage(WPARAM wParam, LPARAM lParam)
 
 		pOldbmp = bmDC.SelectObject(&bmp);
 		bmp.GetBitmap(&bi);
-		pDC->BitBlt(0, 0, r.Width(), r.Height(), &bmDC, 0, 0, SRCCOPY);
+		//Tu dorobit skalovanie z povodnych velkosti a pouzit znovu ten BitBlt() nie StretchBlt();
+		//pDC->BitBlt(0, 0, r.Width(), r.Height(), &bmDC, 0, 0, SRCCOPY);
+		pDC->StretchBlt(0, 0, r.Width(), r.Height(), &bmDC, 0, 0, bi.bmWidth, bi.bmHeight, SRCCOPY);
 		bmDC.SelectObject(pOldbmp);
 
+		image->Attach((HBITMAP)bmp.Detach());
 		//DRAW BITMAP
 	}
 	return S_OK;
