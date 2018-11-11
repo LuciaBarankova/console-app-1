@@ -115,6 +115,8 @@ LRESULT CApplicationDlg::OnDrawImage(WPARAM wParam, LPARAM lParam)
 		CDC bmDC;
 		CBitmap *pOldbmp;
 		BITMAP  bi;
+		int new_Width = 0, new_Height = 0;
+		float factor = 1, factorX = 1, factorY = 1;
 
 		bmp.Attach(image->Detach());
 		bmDC.CreateCompatibleDC(pDC);
@@ -122,14 +124,47 @@ LRESULT CApplicationDlg::OnDrawImage(WPARAM wParam, LPARAM lParam)
 		CRect r(lpDI->rcItem);
 
 		pOldbmp = bmDC.SelectObject(&bmp);
+
 		bmp.GetBitmap(&bi);
-		//Tu dorobit skalovanie z povodnych velkosti a pouzit znovu ten BitBlt() nie StretchBlt();
-		//pDC->BitBlt(0, 0, r.Width(), r.Height(), &bmDC, 0, 0, SRCCOPY);
-		pDC->StretchBlt(0, 0, r.Width(), r.Height(), &bmDC, 0, 0, bi.bmWidth, bi.bmHeight, SRCCOPY);
+
+		float oxxx = bi.bmWidth, oyyy = bi.bmHeight, wxxx = r.Width(), wyyy = r.Height();
+
+		factorX = wxxx / oxxx;
+		factorY = wyyy / oyyy;
+
+		if (oyyy > wyyy & oxxx <= wxxx)
+		{
+			factor = oyyy / wyyy;
+			new_Width = oxxx * factorX* factor;
+			new_Height = wyyy * factor;
+		}
+		if (oyyy <= wyyy && oxxx > wxxx)
+		{
+			factor = oxxx / wxxx;
+			new_Width = wxxx * factor;
+			new_Height = oyyy * factorY*factor;
+		}
+		if ((oxxx < wxxx && oyyy < wyyy) || (oxxx > wxxx && oyyy > wyyy))
+		{
+			if (wxxx < wyyy)
+			{
+				factor = oxxx / wxxx;
+				new_Width = wxxx * factor;
+				new_Height = oyyy * factorY*factor;
+			}
+			else
+			{
+				factor = oyyy / wyyy;
+				new_Width = oxxx * factorX* factor;
+				new_Height = wyyy * factor;
+			}
+		}
+
+
+		pDC->StretchBlt(r.Width() / (float)2, 0, r.Width(), r.Height(), &bmDC, 0, 0, new_Width * (float)2, new_Height * (float)2, SRCCOPY);
 		bmDC.SelectObject(pOldbmp);
 
 		image->Attach((HBITMAP)bmp.Detach());
-		//DRAW BITMAP
 	}
 	return S_OK;
 }
@@ -173,7 +208,7 @@ BOOL CApplicationDlg::OnInitDialog()
 
 	CRect rctClient;
 	GetClientRect(&rctClient);
-	
+
 	m_ctrlImage.GetWindowRect(&rct);
 	m_ptImage.x = rctClient.Width() - rct.Width();
 	m_ptImage.y = rctClient.Height() - rct.Height();
