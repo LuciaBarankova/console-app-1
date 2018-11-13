@@ -13,6 +13,13 @@ public:
 	void DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct) override;
 };
 
+class CStaticHistogram : public CStatic
+{
+public:
+	// Overridables (for owner draw only)
+	void DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct) override;
+};
+
 // CApplicationDlg dialog
 class CApplicationDlg : public CDialogEx
 {
@@ -56,11 +63,13 @@ public:
 	afx_msg void OnUpdateFileClose(CCmdUI *pCmdUI);
 	afx_msg void OnClose();
 	afx_msg LRESULT OnDrawImage(WPARAM wParam, LPARAM lParam);
+	afx_msg LRESULT OnDrawHistogram(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnDestroy(); 
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 
 protected:
 	CStaticImage m_ctrlImage;
+	CStaticHistogram m_ctrlHISTOGRAM;
 	CPoint m_ptImage;
 	CImage *image = nullptr;
 public:

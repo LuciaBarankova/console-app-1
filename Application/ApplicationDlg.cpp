@@ -23,7 +23,12 @@ using namespace Gdiplus;
 
 void CStaticImage::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 {
-	GetParent()->SendMessage( CApplicationDlg::WM_DRAW_IMAGE, (WPARAM)lpDrawItemStruct);
+	GetParent()->SendMessage(CApplicationDlg::WM_DRAW_IMAGE, (WPARAM)lpDrawItemStruct);
+}
+
+void CStaticHistogram::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
+{
+	GetParent()->SendMessage(CApplicationDlg::WM_DRAW_HISTOGRAM, (WPARAM)lpDrawItemStruct);
 }
 
 // CAboutDlg dialog used for App About
@@ -49,7 +54,6 @@ protected:
 	DECLARE_MESSAGE_MAP()
 };
 
-
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)
 END_MESSAGE_MAP()
 
@@ -65,6 +69,7 @@ void CApplicationDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_IMAGE, m_ctrlImage);
+	DDX_Control(pDX, HISTOGRAM, m_ctrlHISTOGRAM);
 }
 
 BEGIN_MESSAGE_MAP(CApplicationDlg, CDialogEx)
@@ -79,6 +84,7 @@ BEGIN_MESSAGE_MAP(CApplicationDlg, CDialogEx)
 	ON_WM_SIZE()
 	ON_WM_SIZING()
 	ON_MESSAGE(WM_DRAW_IMAGE, OnDrawImage)
+	ON_MESSAGE(WM_DRAW_HISTOGRAM, OnDrawHistogram)
 	ON_WM_DESTROY()
 	ON_STN_CLICKED(IDC_IMAGE, &CApplicationDlg::OnStnClickedImage)
 END_MESSAGE_MAP()
@@ -95,9 +101,15 @@ void CApplicationDlg::OnSize(UINT nType, int cx, int cy)
 
 	if (::IsWindow(m_ctrlImage.GetSafeHwnd()))
 	{
-		m_ctrlImage.MoveWindow(0, 0, cx, cy);
+		m_ctrlImage.MoveWindow(0.2*cx, 0, cx*0.8, cy);
 	}
-	SetWindowPos(this, 0, 0, cx, cy, (UINT)SWP_NOMOVE);
+	SetWindowPos(this, 0.2*cx, 0, cx*0.8, cy, (UINT)SWP_NOMOVE);
+
+
+	if (::IsWindow(m_ctrlHISTOGRAM.GetSafeHwnd()))
+	{
+		m_ctrlHISTOGRAM.MoveWindow(0, 0.5*cy, cx*0.2, cy*0.5);
+	}
 
 	Invalidate();
 }
@@ -107,7 +119,6 @@ LRESULT CApplicationDlg::OnDrawImage(WPARAM wParam, LPARAM lParam)
 	LPDRAWITEMSTRUCT lpDI = (LPDRAWITEMSTRUCT)wParam;
 
 	CDC * pDC = CDC::FromHandle(lpDI->hDC);
-
 
 	if (image != nullptr)
 	{
@@ -161,11 +172,30 @@ LRESULT CApplicationDlg::OnDrawImage(WPARAM wParam, LPARAM lParam)
 		}
 
 
-		pDC->StretchBlt(r.Width() / (float)2, 0, r.Width(), r.Height(), &bmDC, 0, 0, new_Width * (float)2, new_Height * (float)2, SRCCOPY);
+		pDC->StretchBlt(0, 0, r.Width(), r.Height(), &bmDC, 0, 0, new_Width, new_Height, SRCCOPY);
 		bmDC.SelectObject(pOldbmp);
 
 		image->Attach((HBITMAP)bmp.Detach());
 	}
+	return S_OK;
+}
+
+LRESULT CApplicationDlg::OnDrawHistogram(WPARAM wParam, LPARAM lParam)
+{
+	LPDRAWITEMSTRUCT lpDI = (LPDRAWITEMSTRUCT)wParam;
+
+	CDC * pDC = CDC::FromHandle(lpDI->hDC);
+	CRect r(lpDI->rcItem);
+
+	if (image != nullptr)
+	{
+		FillRect(*pDC, r, CreateSolidBrush(RGB(0, 0, 255)));
+	}
+	else
+	{
+		FillRect(*pDC, r, CreateSolidBrush(RGB(255, 255, 255)));
+	}
+
 	return S_OK;
 }
 
@@ -209,9 +239,9 @@ BOOL CApplicationDlg::OnInitDialog()
 	CRect rctClient;
 	GetClientRect(&rctClient);
 
-	m_ctrlImage.GetWindowRect(&rct);
-	m_ptImage.x = rctClient.Width() - rct.Width();
-	m_ptImage.y = rctClient.Height() - rct.Height();
+//	m_ctrlImage.GetWindowRect(&rct);
+//	m_ptImage.x = rctClient.Width() - rct.Width();
+//	m_ptImage.y = rctClient.Height() - rct.Height();
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
