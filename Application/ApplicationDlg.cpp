@@ -126,8 +126,6 @@ LRESULT CApplicationDlg::OnDrawImage(WPARAM wParam, LPARAM lParam)
 		CDC bmDC;
 		CBitmap *pOldbmp;
 		BITMAP  bi;
-		int new_Width = 0, new_Height = 0;
-		float factor = 1, factorX = 1, factorY = 1;
 
 		bmp.Attach(image->Detach());
 		bmDC.CreateCompatibleDC(pDC);
@@ -135,44 +133,24 @@ LRESULT CApplicationDlg::OnDrawImage(WPARAM wParam, LPARAM lParam)
 		CRect r(lpDI->rcItem);
 
 		pOldbmp = bmDC.SelectObject(&bmp);
-
 		bmp.GetBitmap(&bi);
 
-		float oxxx = bi.bmWidth, oyyy = bi.bmHeight, wxxx = r.Width(), wyyy = r.Height();
+		pDC->FillSolidRect(r.left, r.top, r.Width(), r.Height(), RGB(255, 255, 255));
 
-		factorX = wxxx / oxxx;
-		factorY = wyyy / oyyy;
+		double dWtoH = (double)bi.bmWidth / (double)bi.bmHeight;
+		UINT nHeight = r.Height();
+		UINT nWidth = (UINT)(dWtoH * (double)nHeight);
 
-		if (oyyy > wyyy & oxxx <= wxxx)
+		if (nWidth > (UINT)r.Width())
 		{
-			factor = oyyy / wyyy;
-			new_Width = oxxx * factorX* factor;
-			new_Height = wyyy * factor;
-		}
-		if (oyyy <= wyyy && oxxx > wxxx)
-		{
-			factor = oxxx / wxxx;
-			new_Width = wxxx * factor;
-			new_Height = oyyy * factorY*factor;
-		}
-		if ((oxxx < wxxx && oyyy < wyyy) || (oxxx > wxxx && oyyy > wyyy))
-		{
-			if (wxxx < wyyy)
-			{
-				factor = oxxx / wxxx;
-				new_Width = wxxx * factor;
-				new_Height = oyyy * factorY*factor;
-			}
-			else
-			{
-				factor = oyyy / wyyy;
-				new_Width = oxxx * factorX* factor;
-				new_Height = wyyy * factor;
-			}
+			nWidth = r.Width();
+			nHeight = (UINT)(nWidth / dWtoH);
+			_ASSERTE(nHeight <= (UINT)r.Height());
 		}
 
+		pDC->SetStretchBltMode(HALFTONE);
 
-		pDC->StretchBlt(0, 0, r.Width(), r.Height(), &bmDC, 0, 0, new_Width, new_Height, SRCCOPY);
+		pDC->StretchBlt(r.left + (r.Width() - nWidth) / 2, r.top + (r.Height() - nHeight) / 2, nWidth, nHeight, &bmDC, 0, 0, bi.bmWidth, bi.bmHeight, SRCCOPY);
 		bmDC.SelectObject(pOldbmp);
 
 		image->Attach((HBITMAP)bmp.Detach());
@@ -189,7 +167,16 @@ LRESULT CApplicationDlg::OnDrawHistogram(WPARAM wParam, LPARAM lParam)
 
 	if (image != nullptr)
 	{
-		FillRect(*pDC, r, CreateSolidBrush(RGB(0, 0, 255)));
+		//skalovanie rozmerov histogramu tak, aby sa zmestil do okna
+		float scaleX = ((float)r.Width()) / (float)256;
+		float scaleY = ((float)r.Height()) / (float)max_histogram;
+
+		for (int i = 0; i < 256; i++)
+		{
+			pDC->SetPixel((int)(scaleX*(float)i) + 5, (r.Height() - 5) - (int)(scaleY*(float)m_hR[i]), (RGB(255, 0, 0)));
+			pDC->SetPixel((int)(scaleX*(float)i) + 5, (r.Height() - 5) - (int)(scaleY*(float)m_hG[i]), (RGB(0, 255, 0)));
+			pDC->SetPixel((int)(scaleX*(float)i) + 5, (r.Height() - 5) - (int)(scaleY*(float)m_hB[i]), (RGB(0, 0, 255)));
+		}
 	}
 	else
 	{
@@ -197,6 +184,49 @@ LRESULT CApplicationDlg::OnDrawHistogram(WPARAM wParam, LPARAM lParam)
 	}
 
 	return S_OK;
+}
+
+void CApplicationDlg::Histogram()
+{
+	int width = image->GetWidth();
+	int height = image->GetHeight();
+	max_histogram = 0;
+
+	for (int i = 0; i < 256; i++)
+	{
+		m_hR[i] = 0;
+		m_hG[i] = 0;
+		m_hB[i] = 0;
+	}
+
+	int tmpR, tmpG, tmpB;
+	COLORREF pixelColor = 0;
+
+	for (int i = 0; i < width; i++)
+	{
+		for (int j = 0; j < height; j++)
+		{
+			pixelColor = image->GetPixel(i, j);
+
+			tmpR = int(GetRValue(pixelColor));
+			tmpG = int(GetGValue(pixelColor));
+			tmpB = int(GetBValue(pixelColor));
+
+			m_hR[tmpR]++;
+			m_hG[tmpG]++;
+			m_hB[tmpB]++;
+
+			if ((max_histogram < m_hR[tmpR]) || (max_histogram < m_hG[tmpG]) || (max_histogram < m_hB[tmpB]))
+			{
+				max_histogram = m_hR[tmpR];
+
+				if (m_hG[tmpG] > max_histogram)
+					max_histogram = m_hG[tmpG];
+				if (m_hB[tmpB] > max_histogram)
+					max_histogram = m_hB[tmpB];
+			}
+		}
+	}
 }
 
 void CApplicationDlg::OnClose()
@@ -311,6 +341,9 @@ void CApplicationDlg::OnFileOpen()
 		}
 		image = new CImage();
 		image->Load(path_name);
+
+		Histogram();
+
 		Invalidate();
 	}
 	else {
