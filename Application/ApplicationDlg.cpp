@@ -169,14 +169,11 @@ LRESULT CApplicationDlg::OnDrawHistogram(WPARAM wParam, LPARAM lParam)
 	{
 		//skalovanie rozmerov histogramu tak, aby sa zmestil do okna
 		float scaleX = ((float)r.Width()) / (float)256;
-		float scaleY = ((float)r.Height()) / (float)max_histogram;
+		float scaleY = ((float)r.Height()) / (float)log10(max_histogram);
 
-		for (int i = 0; i < 256; i++)
-		{
-			pDC->SetPixel((int)(scaleX*(float)i) + 5, (r.Height() - 5) - (int)(scaleY*(float)m_hR[i]), (RGB(255, 0, 0)));
-			pDC->SetPixel((int)(scaleX*(float)i) + 5, (r.Height() - 5) - (int)(scaleY*(float)m_hG[i]), (RGB(0, 255, 0)));
-			pDC->SetPixel((int)(scaleX*(float)i) + 5, (r.Height() - 5) - (int)(scaleY*(float)m_hB[i]), (RGB(0, 0, 255)));
-		}
+		DrawHistogram(pDC, scaleX, scaleY, r.Height(), m_hR, (RGB(255, 0, 0)));
+		DrawHistogram(pDC, scaleX, scaleY, r.Height(), m_hG, (RGB(0, 255, 0)));
+		DrawHistogram(pDC, scaleX, scaleY, r.Height(), m_hB, (RGB(0, 0, 255)));
 	}
 	else
 	{
@@ -219,7 +216,6 @@ void CApplicationDlg::Histogram()
 			if ((max_histogram < m_hR[tmpR]) || (max_histogram < m_hG[tmpG]) || (max_histogram < m_hB[tmpB]))
 			{
 				max_histogram = m_hR[tmpR];
-
 				if (m_hG[tmpG] > max_histogram)
 					max_histogram = m_hG[tmpG];
 				if (m_hB[tmpB] > max_histogram)
@@ -372,4 +368,14 @@ void CApplicationDlg::OnUpdateFileClose(CCmdUI *pCmdUI)
 void CApplicationDlg::OnStnClickedImage()
 {
 	// TODO: Add your control notification handler code here
+}
+
+void CApplicationDlg::DrawHistogram(CDC *pDC, float scaleX, float scaleY, float height, int* m_h, COLORREF color)
+{
+	for (int i = 0; i <= 255; i++)
+	{
+		pDC->FillSolidRect((int)(scaleX*i), (height)-(int)(scaleY*log10(m_h[i])), (scaleX)+1, (int)(scaleY*log10(m_h[i])), color);
+	//	Vykreslenie modrych bodiek histogramu cervenej farby
+	//	pDC->SetPixel((int)(scaleX*i), (height)-(int)(scaleY*m_h[i]), (RGB(0, 0, 255)));
+	}
 }

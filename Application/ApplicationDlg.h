@@ -67,6 +67,7 @@ public:
 	afx_msg void OnDestroy(); 
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	void Histogram();
+	void DrawHistogram(CDC *pDC, float scaleX, float scaleY, float height, int* m_h, COLORREF color);
 
 protected:
 	CStaticImage m_ctrlImage;
@@ -74,10 +75,6 @@ protected:
 	CPoint m_ptImage;
 	CPoint m_ptImage2;
 	CImage *image = nullptr; 
-	/*std::vector<int> m_hR = std::vector<int>(256, 0);
-	std::vector<int> m_hG = std::vector<int>(256, 0);
-	std::vector<int> m_hB = std::vector<int>(256, 0);
-	*/
 	int m_hR[256] = { 0 };
 	int m_hG[256] = { 0 };
 	int m_hB[256] = { 0 };
