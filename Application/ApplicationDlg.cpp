@@ -63,6 +63,11 @@ CApplicationDlg::CApplicationDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(IDD_APPLICATION_DIALOG, pParent)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
+
+	for (int i = 0; i < 256; i++)
+	{
+		tmp_hist[i] = i;
+	}
 }
 
 void CApplicationDlg::DoDataExchange(CDataExchange* pDX)
@@ -87,6 +92,9 @@ BEGIN_MESSAGE_MAP(CApplicationDlg, CDialogEx)
 	ON_MESSAGE(WM_DRAW_HISTOGRAM, OnDrawHistogram)
 	ON_WM_DESTROY()
 	ON_STN_CLICKED(IDC_IMAGE, &CApplicationDlg::OnStnClickedImage)
+	ON_COMMAND(ID_HISTOGRAM_RED, OnHistogramRed)
+	ON_COMMAND(ID_HISTOGRAM_GREEN, OnHistogramGreen)
+	ON_COMMAND(ID_HISTOGRAM_BLUE, OnHistogramBlue)
 END_MESSAGE_MAP()
 
 
@@ -171,13 +179,19 @@ LRESULT CApplicationDlg::OnDrawHistogram(WPARAM wParam, LPARAM lParam)
 		float scaleX = ((float)r.Width()) / (float)256;
 		float scaleY = ((float)r.Height()) / (float)log10(max_histogram);
 
-		DrawHistogram(pDC, scaleX, scaleY, r.Height(), m_hR, (RGB(255, 0, 0)));
-		DrawHistogram(pDC, scaleX, scaleY, r.Height(), m_hG, (RGB(0, 255, 0)));
-		DrawHistogram(pDC, scaleX, scaleY, r.Height(), m_hB, (RGB(0, 0, 255)));
+		if (red) DrawHistogram(pDC, scaleX, scaleY, r.Height(), m_hR, (RGB(255, 0, 0)));
+		if (green) DrawHistogram(pDC, scaleX, scaleY, r.Height(), m_hG, (RGB(0, 255, 0)));
+		if (blue) DrawHistogram(pDC, scaleX, scaleY, r.Height(), m_hB, (RGB(0, 0, 255)));
 	}
 	else
 	{
-		FillRect(*pDC, r, CreateSolidBrush(RGB(255, 255, 255)));
+		float scaleY = (float)r.Height() / ((float)255);
+		float scaleX = ((float)r.Width()) / (float)256;
+
+		for (int i = 0; i <= 255; i++)
+		{
+			pDC->FillSolidRect((int)(scaleX*i), (r.Height())-(int)(scaleY*tmp_hist[i]), (scaleX)+1, (int)(scaleY*tmp_hist[i]), (RGB(0, 0, 0)));
+		}
 	}
 
 	return S_OK;
@@ -356,7 +370,9 @@ void CApplicationDlg::OnUpdateFileOpen(CCmdUI *pCmdUI)
 
 void CApplicationDlg::OnFileClose()
 {
-
+	delete image;
+	image = nullptr;
+	Invalidate();
 }
 
 
@@ -378,4 +394,56 @@ void CApplicationDlg::DrawHistogram(CDC *pDC, float scaleX, float scaleY, float 
 	//	Vykreslenie modrych bodiek histogramu cervenej farby
 	//	pDC->SetPixel((int)(scaleX*i), (height)-(int)(scaleY*m_h[i]), (RGB(0, 0, 255)));
 	}
+}
+
+
+void CApplicationDlg::OnHistogramRed()
+{
+	CMenu *Menu = GetMenu();
+
+	if (GetMenuState(*Menu, ID_HISTOGRAM_RED, MF_BYCOMMAND | MF_CHECKED))
+	{
+		red = FALSE;
+		Menu->GetSubMenu(1)->CheckMenuItem(ID_HISTOGRAM_RED, MF_UNCHECKED);
+	}
+	else
+	{
+		Menu->GetSubMenu(1)->CheckMenuItem(ID_HISTOGRAM_RED, MF_CHECKED);
+		red = TRUE;
+	}
+	Invalidate();
+}
+
+void CApplicationDlg::OnHistogramGreen()
+{
+	CMenu *Menu = GetMenu();
+
+	if (GetMenuState(*Menu, ID_HISTOGRAM_GREEN, MF_BYCOMMAND | MF_CHECKED))
+	{
+		green = FALSE;
+		Menu->GetSubMenu(1)->CheckMenuItem(ID_HISTOGRAM_GREEN, MF_UNCHECKED);
+	}
+	else
+	{
+		Menu->GetSubMenu(1)->CheckMenuItem(ID_HISTOGRAM_GREEN, MF_CHECKED);
+		green = TRUE;
+	}
+	Invalidate();
+}
+
+void CApplicationDlg::OnHistogramBlue()
+{
+	CMenu *Menu = GetMenu();
+
+	if (GetMenuState(*Menu, ID_HISTOGRAM_BLUE, MF_BYCOMMAND | MF_CHECKED))
+	{
+		blue = FALSE;
+		Menu->GetSubMenu(1)->CheckMenuItem(ID_HISTOGRAM_BLUE, MF_UNCHECKED);
+	}
+	else
+	{
+		Menu->GetSubMenu(1)->CheckMenuItem(ID_HISTOGRAM_BLUE, MF_CHECKED);
+		blue = TRUE;
+	}
+	Invalidate();
 }

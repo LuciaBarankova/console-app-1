@@ -68,6 +68,9 @@ public:
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	void Histogram();
 	void DrawHistogram(CDC *pDC, float scaleX, float scaleY, float height, int* m_h, COLORREF color);
+	afx_msg void OnHistogramRed();
+	afx_msg void OnHistogramGreen();
+	afx_msg void OnHistogramBlue();
 
 protected:
 	CStaticImage m_ctrlImage;
@@ -78,7 +81,11 @@ protected:
 	int m_hR[256] = { 0 };
 	int m_hG[256] = { 0 };
 	int m_hB[256] = { 0 };
+	int tmp_hist[256] = { 0 };
 	int max_histogram = 0;
+	bool red=false;
+	bool green=false;
+	bool blue=false;
 
 public:
 	afx_msg void OnStnClickedImage();
