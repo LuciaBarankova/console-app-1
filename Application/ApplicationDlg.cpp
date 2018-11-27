@@ -210,33 +210,46 @@ void CApplicationDlg::Histogram()
 		m_hB[i] = 0;
 	}
 
-	int tmpR, tmpG, tmpB;
-	COLORREF pixelColor = 0;
+	COLORREF pixelColorRed = 0, pixelColorGreen = 0, pixelColorBlue = 0;
+	BYTE * bytePtr;
+	int pitch, maxR = INT_MIN, maxG = INT_MIN, maxB = INT_MIN, minR = INT_MAX, minG = INT_MAX, minB = INT_MAX;
+	bytePtr = (BYTE *)image->GetBits();
+	pitch = image->GetPitch();
 
-	for (int i = 0; i < width; i++)
+	for (int i = 0; i < height; i++)
 	{
-		for (int j = 0; j < height; j++)
+		for (int j = 0; j < width; j ++)
 		{
-			pixelColor = image->GetPixel(i, j);
+			pixelColorRed = bytePtr[i*pitch + 3*j];
+			pixelColorGreen = bytePtr[i*pitch + 3*j + 1];
+			pixelColorBlue = bytePtr[i*pitch + 3*j + 2];
 
-			tmpR = int(GetRValue(pixelColor));
-			tmpG = int(GetGValue(pixelColor));
-			tmpB = int(GetBValue(pixelColor));
+			m_hR[pixelColorRed]++;
+			m_hG[pixelColorGreen]++;
+			m_hB[pixelColorBlue]++;
 
-			m_hR[tmpR]++;
-			m_hG[tmpG]++;
-			m_hB[tmpB]++;
-
-			if ((max_histogram < m_hR[tmpR]) || (max_histogram < m_hG[tmpG]) || (max_histogram < m_hB[tmpB]))
+			/*if ((max_histogram < m_hR[pixelColorRed]) || (max_histogram < m_hG[pixelColorGreen]) || (max_histogram < m_hB[pixelColorBlue]))
 			{
-				max_histogram = m_hR[tmpR];
-				if (m_hG[tmpG] > max_histogram)
-					max_histogram = m_hG[tmpG];
-				if (m_hB[tmpB] > max_histogram)
-					max_histogram = m_hB[tmpB];
-			}
+				max_histogram = m_hR[pixelColorRed];
+				if (m_hG[pixelColorGreen] > max_histogram)
+					max_histogram = m_hG[pixelColorGreen];
+				if (m_hB[pixelColorBlue] > max_histogram)
+					max_histogram = m_hB[pixelColorBlue];
+			}*/
+
+			if(maxR < m_hR[pixelColorRed]) maxR = m_hR[pixelColorRed];
+			if(maxG < m_hG[pixelColorGreen]) maxG = m_hG[pixelColorGreen];
+			if(maxB < m_hB[pixelColorBlue]) maxB = m_hB[pixelColorBlue];
+			if(minR > m_hR[pixelColorRed]) minR = m_hR[pixelColorRed];
+			if(minG > m_hG[pixelColorGreen]) minG = m_hG[pixelColorGreen];
+			if(minB > m_hB[pixelColorBlue]) minB = m_hB[pixelColorBlue];
 		}
 	}
+	if (maxR > maxG && maxR > maxB) max_histogram = maxR;
+	else if (maxG > maxB) max_histogram = maxG;
+	else max_histogram = maxB;
+
+	//Tu opravit maxHistogram
 }
 
 void CApplicationDlg::OnClose()
