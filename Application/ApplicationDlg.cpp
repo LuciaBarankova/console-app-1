@@ -177,7 +177,7 @@ LRESULT CApplicationDlg::OnDrawHistogram(WPARAM wParam, LPARAM lParam)
 	{
 		//skalovanie rozmerov histogramu tak, aby sa zmestil do okna
 		float scaleX = ((float)r.Width()) / (float)256;
-		float scaleY = ((float)r.Height()) / (float)log10(max_histogram);
+		float scaleY = ((float)r.Height()) / (float)log10(max_histogram - min_histogram);
 
 		if (red) DrawHistogram(pDC, scaleX, scaleY, r.Height(), m_hR, (RGB(255, 0, 0)));
 		if (green) DrawHistogram(pDC, scaleX, scaleY, r.Height(), m_hG, (RGB(0, 255, 0)));
@@ -220,9 +220,9 @@ void CApplicationDlg::Histogram()
 	{
 		for (int j = 0; j < width; j ++)
 		{
-			pixelColorRed = bytePtr[i*pitch + 3*j];
+			pixelColorRed = bytePtr[i*pitch + 3 * j + 2];
 			pixelColorGreen = bytePtr[i*pitch + 3*j + 1];
-			pixelColorBlue = bytePtr[i*pitch + 3*j + 2];
+			pixelColorBlue = bytePtr[i*pitch + 3 * j];
 
 			m_hR[pixelColorRed]++;
 			m_hG[pixelColorGreen]++;
@@ -245,9 +245,14 @@ void CApplicationDlg::Histogram()
 			if(minB > m_hB[pixelColorBlue]) minB = m_hB[pixelColorBlue];
 		}
 	}
+
 	if (maxR > maxG && maxR > maxB) max_histogram = maxR;
 	else if (maxG > maxB) max_histogram = maxG;
 	else max_histogram = maxB;
+
+	if (minR < minG && minR < minB) min_histogram = minR;
+	else if (minG < minB) min_histogram = minG;
+	else min_histogram = minB;
 
 	//Tu opravit maxHistogram
 }

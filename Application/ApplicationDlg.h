@@ -83,6 +83,7 @@ protected:
 	int m_hB[256] = { 0 };
 	int tmp_hist[256] = { 0 };
 	int max_histogram = 0;
+	int min_histogram = 0;
 	bool red=false;
 	bool green=false;
 	bool blue=false;
