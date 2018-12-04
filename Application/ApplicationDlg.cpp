@@ -95,6 +95,7 @@ BEGIN_MESSAGE_MAP(CApplicationDlg, CDialogEx)
 	ON_COMMAND(ID_HISTOGRAM_RED, OnHistogramRed)
 	ON_COMMAND(ID_HISTOGRAM_GREEN, OnHistogramGreen)
 	ON_COMMAND(ID_HISTOGRAM_BLUE, OnHistogramBlue)
+	ON_WM_TIMER()
 END_MESSAGE_MAP()
 
 
@@ -178,10 +179,12 @@ LRESULT CApplicationDlg::OnDrawHistogram(WPARAM wParam, LPARAM lParam)
 		//skalovanie rozmerov histogramu tak, aby sa zmestil do okna
 		float scaleX = ((float)r.Width()) / (float)256;
 		float scaleY = ((float)r.Height()) / (float)log10(max_histogram - min_histogram);
-
-		if (red) DrawHistogram(pDC, scaleX, scaleY, r.Height(), m_hR, (RGB(255, 0, 0)));
-		if (green) DrawHistogram(pDC, scaleX, scaleY, r.Height(), m_hG, (RGB(0, 255, 0)));
-		if (blue) DrawHistogram(pDC, scaleX, scaleY, r.Height(), m_hB, (RGB(0, 0, 255)));
+		if (m_bHist)
+		{
+			if (red) DrawHistogram(pDC, scaleX, scaleY, r.Height(), m_hR, (RGB(255, 0, 0)));
+			if (green) DrawHistogram(pDC, scaleX, scaleY, r.Height(), m_hG, (RGB(0, 255, 0)));
+			if (blue) DrawHistogram(pDC, scaleX, scaleY, r.Height(), m_hB, (RGB(0, 0, 255)));
+		}
 	}
 	else
 	{
@@ -211,11 +214,9 @@ void CApplicationDlg::Histogram()
 	}
 
 	COLORREF pixelColorRed = 0, pixelColorGreen = 0, pixelColorBlue = 0;
-	BYTE * bytePtr;
-	int pitch, maxR = INT_MIN, maxG = INT_MIN, maxB = INT_MIN, minR = INT_MAX, minG = INT_MAX, minB = INT_MAX;
-	bytePtr = (BYTE *)image->GetBits();
-	pitch = image->GetPitch();
 
+	int maxR = INT_MIN, maxG = INT_MIN, maxB = INT_MIN, minR = INT_MAX, minG = INT_MAX, minB = INT_MAX;
+	
 	for (int i = 0; i < height; i++)
 	{
 		for (int j = 0; j < width; j ++)
@@ -254,7 +255,7 @@ void CApplicationDlg::Histogram()
 	else if (minG < minB) min_histogram = minG;
 	else min_histogram = minB;
 
-	//Tu opravit maxHistogram
+	m_bHist = true;
 }
 
 void CApplicationDlg::OnClose()
@@ -357,6 +358,7 @@ void CApplicationDlg::OnFileOpen()
 {
 	//GET FILE NAME AND CREATE GDIPLUS BITMAP
 	CFileDialog fdlg(TRUE, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, _T("Jpg Files (*.jpg)|*.jpg|Png Files (*.png)|*.png||"));
+	m_bHist = false;
 
 	if (fdlg.DoModal() == IDOK) {
 		CString path_name = fdlg.GetPathName();
@@ -370,9 +372,12 @@ void CApplicationDlg::OnFileOpen()
 		image = new CImage();
 		image->Load(path_name);
 
-		Histogram();
+		bytePtr = (BYTE *)image->GetBits();
+		pitch = image->GetPitch();
 
-		Invalidate();
+		std::thread thread1(&CApplicationDlg::Histogram, this);
+		m_Timer = SetTimer(1, 100, nullptr);
+		thread1.detach();
 	}
 	else {
 		::MessageBox(NULL, __T("Chyba pri otvoreni file dialogu."), __T("Error"), MB_OK);
@@ -464,4 +469,13 @@ void CApplicationDlg::OnHistogramBlue()
 		blue = TRUE;
 	}
 	Invalidate();
+}
+
+void CApplicationDlg::OnTimer(UINT_PTR uIDEvent)
+{
+	if (m_bHist)
+	{
+		KillTimer(m_Timer);
+		Invalidate();
+	}
 }

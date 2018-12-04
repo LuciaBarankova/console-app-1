@@ -5,6 +5,7 @@
 #pragma once
 
 #include <GdiPlus.h>
+#include <thread>
 
 class CStaticImage : public CStatic
 {
@@ -71,13 +72,16 @@ public:
 	afx_msg void OnHistogramRed();
 	afx_msg void OnHistogramGreen();
 	afx_msg void OnHistogramBlue();
+	afx_msg void OnTimer(UINT_PTR uIDEvent);
 
 protected:
 	CStaticImage m_ctrlImage;
 	CStaticHistogram m_ctrlHISTOGRAM;
 	CPoint m_ptImage;
 	CPoint m_ptImage2;
-	CImage *image = nullptr; 
+	CImage *image = nullptr;
+	int pitch;
+	BYTE * bytePtr;
 	int m_hR[256] = { 0 };
 	int m_hG[256] = { 0 };
 	int m_hB[256] = { 0 };
@@ -87,6 +91,8 @@ protected:
 	bool red=false;
 	bool green=false;
 	bool blue=false;
+	bool m_bHist = false;
+	UINT_PTR m_Timer;
 
 public:
 	afx_msg void OnStnClickedImage();
