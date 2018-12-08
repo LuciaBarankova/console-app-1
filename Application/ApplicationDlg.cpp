@@ -375,11 +375,13 @@ void CApplicationDlg::OnFileOpen()
 		bytePtr = (BYTE *)image->GetBits();
 		pitch = image->GetPitch();
 
-		Transpose();
-
-		std::thread thread1(&CApplicationDlg::Histogram, this);
+		std::thread thread1(&CApplicationDlg::Transpose, this);
 		m_Timer = SetTimer(1, 100, nullptr);
 		thread1.detach();
+
+		std::thread thread2(&CApplicationDlg::Histogram, this);
+		m_Timer = SetTimer(1, 100, nullptr);
+		thread2.detach();
 	}
 	else {
 		::MessageBox(NULL, __T("Chyba pri otvoreni file dialogu."), __T("Error"), MB_OK);
