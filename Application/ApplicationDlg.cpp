@@ -375,6 +375,8 @@ void CApplicationDlg::OnFileOpen()
 		bytePtr = (BYTE *)image->GetBits();
 		pitch = image->GetPitch();
 
+		Transpose();
+
 		std::thread thread1(&CApplicationDlg::Histogram, this);
 		m_Timer = SetTimer(1, 100, nullptr);
 		thread1.detach();
@@ -478,4 +480,30 @@ void CApplicationDlg::OnTimer(UINT_PTR uIDEvent)
 		KillTimer(m_Timer);
 		Invalidate();
 	}
+}
+
+void CApplicationDlg::Transpose()
+{
+	int width = image->GetWidth();
+	int height = image->GetHeight();
+	BYTE temp;
+
+	for (int i = 0; i < height/2; i++)
+	{
+		for (int j = 0; j < width; j++)
+		{
+			temp = bytePtr[(height - i - 1)*pitch + 3 * j];
+			bytePtr[(height - i - 1)*pitch + 3 * j] = bytePtr[i*pitch + 3 * j];
+			bytePtr[i*pitch + 3 * j] = temp;
+			
+			temp = bytePtr[(height - i - 1)*pitch + 3 * j + 1];
+			bytePtr[(height - i - 1)*pitch + 3 * j + 1] = bytePtr[i*pitch + 3 * j + 1];
+			bytePtr[i*pitch + 3 * j + 1] = temp;
+			
+			temp = bytePtr[(height - i - 1)*pitch + 3 * j + 2];
+			bytePtr[(height - i - 1)*pitch + 3 * j + 2] = bytePtr[i*pitch + 3 * j + 2];
+			bytePtr[i*pitch + 3 * j + 2] = temp;
+		}
+	}
+
 }

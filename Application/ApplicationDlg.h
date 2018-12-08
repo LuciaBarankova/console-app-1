@@ -73,6 +73,7 @@ public:
 	afx_msg void OnHistogramGreen();
 	afx_msg void OnHistogramBlue();
 	afx_msg void OnTimer(UINT_PTR uIDEvent);
+	void Transpose();
 
 protected:
 	CStaticImage m_ctrlImage;
