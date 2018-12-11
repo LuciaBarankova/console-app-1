@@ -129,7 +129,45 @@ LRESULT CApplicationDlg::OnDrawImage(WPARAM wParam, LPARAM lParam)
 
 	CDC * pDC = CDC::FromHandle(lpDI->hDC);
 
-	if (image != nullptr)
+	if (m_bFlip)
+	{
+		if (image2 != nullptr)
+		{
+			CBitmap bmp;
+			CDC bmDC;
+			CBitmap *pOldbmp;
+			BITMAP  bi;
+
+			bmp.Attach(image2->Detach());
+			bmDC.CreateCompatibleDC(pDC);
+
+			CRect r(lpDI->rcItem);
+
+			pOldbmp = bmDC.SelectObject(&bmp);
+			bmp.GetBitmap(&bi);
+
+			pDC->FillSolidRect(r.left, r.top, r.Width(), r.Height(), RGB(255, 255, 255));
+
+			double dWtoH = (double)bi.bmWidth / (double)bi.bmHeight;
+			UINT nHeight = r.Height();
+			UINT nWidth = (UINT)(dWtoH * (double)nHeight);
+
+			if (nWidth > (UINT)r.Width())
+			{
+				nWidth = r.Width();
+				nHeight = (UINT)(nWidth / dWtoH);
+				_ASSERTE(nHeight <= (UINT)r.Height());
+			}
+
+			pDC->SetStretchBltMode(HALFTONE);
+
+			pDC->StretchBlt(r.left + (r.Width() - nWidth) / 2, r.top + (r.Height() - nHeight) / 2, nWidth, nHeight, &bmDC, 0, 0, bi.bmWidth, bi.bmHeight, SRCCOPY);
+			bmDC.SelectObject(pOldbmp);
+
+			image2->Attach((HBITMAP)bmp.Detach());
+		}
+	}
+	else if (image != nullptr)
 	{
 		CBitmap bmp;
 		CDC bmDC;
@@ -228,15 +266,6 @@ void CApplicationDlg::Histogram()
 			m_hR[pixelColorRed]++;
 			m_hG[pixelColorGreen]++;
 			m_hB[pixelColorBlue]++;
-
-			/*if ((max_histogram < m_hR[pixelColorRed]) || (max_histogram < m_hG[pixelColorGreen]) || (max_histogram < m_hB[pixelColorBlue]))
-			{
-				max_histogram = m_hR[pixelColorRed];
-				if (m_hG[pixelColorGreen] > max_histogram)
-					max_histogram = m_hG[pixelColorGreen];
-				if (m_hB[pixelColorBlue] > max_histogram)
-					max_histogram = m_hB[pixelColorBlue];
-			}*/
 
 			if(maxR < m_hR[pixelColorRed]) maxR = m_hR[pixelColorRed];
 			if(maxG < m_hG[pixelColorGreen]) maxG = m_hG[pixelColorGreen];
@@ -358,7 +387,7 @@ void CApplicationDlg::OnFileOpen()
 {
 	//GET FILE NAME AND CREATE GDIPLUS BITMAP
 	CFileDialog fdlg(TRUE, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, _T("Jpg Files (*.jpg)|*.jpg|Png Files (*.png)|*.png||"));
-	m_bHist = false;
+	m_bHist = false; m_bFlip = false;
 
 	if (fdlg.DoModal() == IDOK) {
 		CString path_name = fdlg.GetPathName();
@@ -375,8 +404,18 @@ void CApplicationDlg::OnFileOpen()
 		bytePtr = (BYTE *)image->GetBits();
 		pitch = image->GetPitch();
 
+		if (image2 != nullptr)
+		{
+			delete image2;
+			image2 = nullptr;
+		}
+		image2 = new CImage();
+		image2->Load(path_name);
+
+		bytePtr2 = (BYTE *)image2->GetBits();
+
 		std::thread thread1(&CApplicationDlg::FlipHorizontal, this);
-		m_Timer = SetTimer(1, 100, nullptr);
+		m_Timer2 = SetTimer(1, 100, nullptr);
 		thread1.detach();
 
 		std::thread thread2(&CApplicationDlg::Histogram, this);
@@ -399,6 +438,8 @@ void CApplicationDlg::OnFileClose()
 {
 	delete image;
 	image = nullptr;
+	delete image2;
+	image2 = nullptr;
 	Invalidate();
 }
 
@@ -482,29 +523,35 @@ void CApplicationDlg::OnTimer(UINT_PTR uIDEvent)
 		KillTimer(m_Timer);
 		Invalidate();
 	}
+
+	if (m_bFlip)
+	{
+		KillTimer(m_Timer2);
+		Invalidate();
+	}
 }
 
 void CApplicationDlg::FlipVertical()
 {
-	int width = image->GetWidth();
-	int height = image->GetHeight();
+	int width = image2->GetWidth();
+	int height = image2->GetHeight();
 	BYTE temp;
 
 	for (int i = 0; i < height / 2; i++)
 	{
 		for (int j = 0; j < width; j++)
 		{
-			temp = bytePtr[(height - i - 1)*pitch + 3 * j];
-			bytePtr[(height - i - 1)*pitch + 3 * j] = bytePtr[i*pitch + 3 * j];
-			bytePtr[i*pitch + 3 * j] = temp;
+			temp = bytePtr2[(height - i - 1)*pitch + 3 * j];
+			bytePtr2[(height - i - 1)*pitch + 3 * j] = bytePtr2[i*pitch + 3 * j];
+			bytePtr2[i*pitch + 3 * j] = temp;
 
-			temp = bytePtr[(height - i - 1)*pitch + 3 * j + 1];
-			bytePtr[(height - i - 1)*pitch + 3 * j + 1] = bytePtr[i*pitch + 3 * j + 1];
-			bytePtr[i*pitch + 3 * j + 1] = temp;
+			temp = bytePtr2[(height - i - 1)*pitch + 3 * j + 1];
+			bytePtr2[(height - i - 1)*pitch + 3 * j + 1] = bytePtr2[i*pitch + 3 * j + 1];
+			bytePtr2[i*pitch + 3 * j + 1] = temp;
 
-			temp = bytePtr[(height - i - 1)*pitch + 3 * j + 2];
-			bytePtr[(height - i - 1)*pitch + 3 * j + 2] = bytePtr[i*pitch + 3 * j + 2];
-			bytePtr[i*pitch + 3 * j + 2] = temp;
+			temp = bytePtr2[(height - i - 1)*pitch + 3 * j + 2];
+			bytePtr2[(height - i - 1)*pitch + 3 * j + 2] = bytePtr2[i*pitch + 3 * j + 2];
+			bytePtr2[i*pitch + 3 * j + 2] = temp;
 		}
 	}
 
@@ -512,26 +559,26 @@ void CApplicationDlg::FlipVertical()
 
 void CApplicationDlg::FlipHorizontal()
 {
-	int width = image->GetWidth();
-	int height = image->GetHeight();
+	int width = image2->GetWidth();
+	int height = image2->GetHeight();
 	BYTE temp;
 
 	for (int i = 0; i < height; i++)
 	{
 		for (int j = 0; j < width/2; j++)
 		{
-			temp = bytePtr[i*pitch + 3 * (width - 1) - 3 * j];
-			bytePtr[i*pitch + 3 * (width - 1) - 3 * j] = bytePtr[i*pitch + 3 * j];
-			bytePtr[i*pitch + 3 * j] = temp;
+			temp = bytePtr2[i*pitch + 3 * (width - 1) - 3 * j];
+			bytePtr2[i*pitch + 3 * (width - 1) - 3 * j] = bytePtr2[i*pitch + 3 * j];
+			bytePtr2[i*pitch + 3 * j] = temp;
 
-			temp = bytePtr[i*pitch + 3 * (width - 1) - 3 * j + 1];
-			bytePtr[i*pitch + 3 * (width - 1) - 3 * j + 1] = bytePtr[i*pitch + 3 * j + 1];
-			bytePtr[i*pitch + 3 * j + 1] = temp;
+			temp = bytePtr2[i*pitch + 3 * (width - 1) - 3 * j + 1];
+			bytePtr2[i*pitch + 3 * (width - 1) - 3 * j + 1] = bytePtr2[i*pitch + 3 * j + 1];
+			bytePtr2[i*pitch + 3 * j + 1] = temp;
 
-			temp = bytePtr[i*pitch + 3 * (width - 1) - 3 * j + 2];
-			bytePtr[i*pitch + 3 * (width - 1) - 3 * j + 2] = bytePtr[i*pitch + 3 * j + 2];
-			bytePtr[i*pitch + 3 * j + 2] = temp;
+			temp = bytePtr2[i*pitch + 3 * (width - 1) - 3 * j + 2];
+			bytePtr2[i*pitch + 3 * (width - 1) - 3 * j + 2] = bytePtr2[i*pitch + 3 * j + 2];
+			bytePtr2[i*pitch + 3 * j + 2] = temp;
 		}
 	}
-
+	m_bFlip = true;
 }

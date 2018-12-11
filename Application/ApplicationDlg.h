@@ -82,8 +82,10 @@ protected:
 	CPoint m_ptImage;
 	CPoint m_ptImage2;
 	CImage *image = nullptr;
+	CImage *image2 = nullptr;
 	int pitch;
 	BYTE * bytePtr;
+	BYTE * bytePtr2;
 	int m_hR[256] = { 0 };
 	int m_hG[256] = { 0 };
 	int m_hB[256] = { 0 };
@@ -94,7 +96,9 @@ protected:
 	bool green=false;
 	bool blue=false;
 	bool m_bHist = false;
+	bool m_bFlip = false;
 	UINT_PTR m_Timer;
+	UINT_PTR m_Timer2;
 
 public:
 	afx_msg void OnStnClickedImage();
